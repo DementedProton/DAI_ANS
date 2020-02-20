@@ -7,7 +7,7 @@ import scapy
 ERRORS 
 1. ARP request being unicast -- probably a ignore condition - task 3? 
 2. Gratuitous ARP being unicast -- probably a ignore condition - task 3? 
-3. ARP response without request -- probably a ignore condition - task 3? 
+3. ARP response without request -- probably a ignore condition - task 3? -- not necessarily an error 
 4. mac not in list
 5. ip not in list 
 6. wrong ip being broadcasted, when it should be something else from config file?
@@ -25,6 +25,7 @@ Permitted
 1. ARP request
 2. ARP response
 3. Gratuitous ARP -> sent to broadcast address - classified as a request
+4. arp probe? 
 ??
 ??
 
