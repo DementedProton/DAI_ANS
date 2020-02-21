@@ -1,7 +1,7 @@
 import json
 from scapy.all import *
 import scapy
-
+import logging
 
 '''
 ERRORS 
@@ -18,14 +18,24 @@ ERRORS
 Notice
 1. IP being changed - advertises 192.168.178.1 previously advertised 192.168.178.2
 2. ip being advertized -  de:ad:be:ef advertised 192.168.178.1 
-3. ??
-4. ?? 
+3. arp announcement
+4. arp probe  
+#5. proxy arp???  -> too niche, not general
+
+questions
+1. proxy arp
+2. what happens in the event of receiving two mac responses for the same broadcast request - high availibility but how 
+    will we tell it apart from a arp cache poisoning attack
+3. 
+
 
 Permitted
 1. ARP request
 2. ARP response
 3. Gratuitous ARP -> sent to broadcast address - classified as a request
 4. arp probe? 
+5. Redundant IP and MAC Addresses
+6. Redundant IP Addresses - HA 
 ??
 ??
 
@@ -36,21 +46,91 @@ IP being changed - advertises 192.168.178.1 previously advertised 192.168.178.2
 
 '''
 
+broadcast_packet_tracker = {}
+
+
 def filter_arp(packet: scapy.layers.l2.Ether):
     if packet.guess_payload_class(packet) == scapy.layers.l2.ARP:
         return True
 
-packets = scapy.all.rdpcap('C:\\Users\\seven\\Downloads\\Advanced Network Security\\project2\\normal-arp.pcap')
 
-arp_packets = packets.filter(filter_arp)
+# todo add arp probe packet
+class ArpPacket:
+    def __init__(self, packet: scapy.layers.l2.Ether):
+        self.epoch = float(packet.time)
+        self.frame_mac_src = packet.src
+        self.frame_mac_dst = packet.dst
+        self.arp_mac_src = packet[ARP].hwsrc
+        self.arp_mac_dst = packet[ARP].hwdst
+        self.src_ip = packet[ARP].psrc
+        self.dst_ip = packet[ARP].pdst
+        self.arp_type = 'request' if packet[ARP].op == 1 else 'reply'
+        self.is_broadcast = True if self.frame_mac_dst == 'FF:FF:FF:FF:FF:FF' else False
+        self.is_gratuitous = True if (self.dst_ip == self.src_ip and self.arp_type == 'reply'
+                                      and self.frame_mac_dst == 'FF:FF:FF:FF:FF:FF' and
+                                      self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF') else False
+        self.is_arp_probe = True if (self.arp_mac_dst == '00:00:00:00:00:00' and self.src_ip == '0.0.0.0'
+                                     and self.frame_mac_dst == 'FF:FF:FF:FF:FF:FF') else False
+        self.is_announcement = True if (self.arp_type == 'request' and self.arp_mac_dst == '00:00:00:00:00:00'
+                                        and self.src_ip == self.dst_ip) else False
+        self.configuration_list: dict = json.load(open('config.json'))
+        self.list_of_ips = list(self.configuration_list.keys())
+        self.list_of_macs = []
+        for item in list(self.configuration_list.values()):
+            if type(item) == list:
+                for mac in item:
+                    self.list_of_macs.append(mac)
+            else:
+                self.list_of_macs.append(item)
 
-dict_of_arp_requests = json.load(open('config.json'))
+    def validate(self):
+        if (self.frame_mac_dst not in self.list_of_macs) or (self.frame_mac_src not in self.list_of_macs) \
+                or (self.arp_mac_dst not in self.list_of_macs) or (self.arp_mac_src not in self.list_of_macs):
+            logging.error(f'[{self.epoch}]: [Packet transmitted with unknown MAC]')
+        if (self.src_ip not in self.list_of_ips) or (self.dst_ip not in self.list_of_ips):
+            logging.error(f'[{self.epoch}]: [Packet transmitted by {self.frame_mac_src} has unknown IP]')
+        if self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF' and not self.is_broadcast:
+            logging.error(f'[{self.epoch}]: [Unicasted packet suspiciously marked as a broadcast packet]')
+        if self.frame_mac_dst != self.arp_mac_dst:
+            logging.error(
+                f'[{self.epoch}]: [MAC {self.frame_mac_dst} sent ARP packet with src marked as {self.arp_mac_dst}]')
+        if not self.is_gratuitous and self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF':
+            logging.error(f'[{self.epoch}]: [Gratuitous ARP sent by {self.frame_mac_dst} is '
+                          f'unicasted to {self.frame_mac_dst}]')
+        if self.is_gratuitous:
+            logging.info(f'[{self.epoch}]: [Gratuitous ARP sent by {self.frame_mac_dst} for ip {self.dst_ip}]')
+        elif self.is_announcement:
+            logging.info(f'[{self.epoch}]: [ARP announcement sent by {self.frame_mac_dst} claiming ip {self.dst_ip}]')
+        elif self.is_arp_probe:
+            logging.info(f'[{self.epoch}]: [ARP Probe sent by {self.frame_mac_dst} for ip {self.dst_ip}]')
+        elif self.is_broadcast:
+            broadcast_packet_tracker[self.dst_ip] = self.configuration_list[self.dst_ip]
+            logging.debug(f'[{self.epoch}]: [ARP Broadcast request sent by {self.frame_mac_dst} for ip {self.dst_ip}]')
+        elif self.arp_type == 'reply':
+            if (self.dst_ip in broadcast_packet_tracker) and \
+                    (self.frame_mac_src in self.configuration_list[self.src_ip]):
+                if type(broadcast_packet_tracker[self.dst_ip]) == list:
+                    broadcast_packet_tracker[self.dst_ip].remove(self.frame_mac_src)
+                else:
+                    broadcast_packet_tracker.pop(self.frame_mac_src)
+                logging.debug(f'[{self.epoch}]: [ARP reply sent by {self.frame_mac_dst} to {self.frame_mac_dst} '
+                              f'for ip {self.dst_ip}]')
+            else:
+                logging.error(f'[{self.epoch}]: [ARP response sent by {self.frame_mac_src} to {self.frame_mac_dst}'
+                              f' without no request]')
 
 
-for packet in arp_packets:
-    if packet[ARP].op == 1:
-        print(f"{packet[ARP].psrc} requests for {packet[ARP].pdst}")
-    elif packet[ARP].op ==2:
-        print(f"{packet[ARP].psrc} sent response to {packet[ARP].pdst}")
+def main():
+    logging.basicConfig(format='[%(levelname)s] : %(message)s', filename='console.log', filemode='w',
+                        level=logging.DEBUG)
+    packets = scapy.all.rdpcap('C:\\Users\\seven\\Downloads\\Advanced Network Security\\project2\\normal-arp.pcap')
+    arp_packets = packets.filter(filter_arp)
+    for packet in arp_packets:
+        if packet[ARP].op == 1:
+            print(f"{packet[ARP].psrc} requests for {packet[ARP].pdst}")
+        elif packet[ARP].op == 2:
+            print(f"{packet[ARP].psrc} sent response to {packet[ARP].pdst}")
 
 
+if __name__ == '__main__':
+    main()

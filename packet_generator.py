@@ -7,7 +7,8 @@ Valid:
 Ether(src= '44:15:55:DB:DA:DC', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.28', pdst='192.168.1.13', hwsrc='44:15:55:DB:DA:DC', hwdst='FF:FF:FF:FF:FF:FF') -1S
 Ether(src= '78:81:A0:12:81:09', dst= '44:15:55:DB:DA:DC') / ARP(op=2, psrc='192.168.1.13', pdst='192.168.1.28', hwsrc='78:81:A0:12:81:09', hwdst='44:15:55:DB:DA:DC') -1
 Ether(src= '82:D2:42:69:0E:C8', dst= '44:15:55:DB:DA:DC') / ARP(op=2, psrc='192.168.1.13', pdst='192.168.1.28', hwsrc='82:D2:42:69:0E:C8', hwdst='44:15:55:DB:DA:DC') -1
-
+Ether(src= '82:D2:42:69:0E:C8', dst= '44:15:55:DB:DA:DC') / ARP(op=2, psrc='192.168.1.13', pdst='192.168.1.28', hwsrc='82:D2:42:69:0E:C8', hwdst='44:15:55:DB:DA:DC') -1
+ 
 Ether(src= 'CF:62:43:C0:AC:E3', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.15', pdst='192.168.1.6', hwsrc='CF:62:43:C0:AC:E3', hwdst='FF:FF:FF:FF:FF:FF') -2S 
 Ether(src= '1A:CC:75:6D:D9:D0', dst= 'CF:62:43:C0:AC:E3') / ARP(op=2, psrc='192.168.1.6', pdst='192.168.1.15', hwsrc='1A:CC:75:6D:D9:D0', hwdst='CF:62:43:C0:AC:E3') -2 
 
@@ -26,6 +27,7 @@ Ether(src= 'B3:8B:9B:0F:29:8C', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.
 
 Ether(src= 'C2:23:5E:C5:DF:6A', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.1', pdst='192.168.1.1', hwsrc='C2:23:5E:C5:DF:6A', hwdst='FF:FF:FF:FF:FF:FF') - valid GARP
 
+# todo add arp probe packet
 
 Invalid:
 
@@ -45,6 +47,8 @@ Ether(src= 'BB:B4:C8:08:92:8E', dst= '32:2F:6B:F6:B0:51') / ARP(op=1, psrc='192.
 
 unicast GARP:
 Ether(src= 'C2:23:5E:C5:DF:6A', dst= '88:C7:9E:77:42:42') / ARP(op=1, psrc='192.168.1.1', pdst='192.168.1.1', hwsrc='C2:23:5E:C5:DF:6A', hwdst='88:C7:9E:77:42:42') 
+
+ARP response without request
 
 '''
 
