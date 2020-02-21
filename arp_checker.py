@@ -2,6 +2,7 @@ import json
 from scapy.all import *
 import scapy
 import logging
+import pdb
 
 '''
 ERRORS 
@@ -85,44 +86,47 @@ class ArpPacket:
         self.list_of_macs.append('00:00:00:00:00:00')
         self.list_of_macs.append('ff:ff:ff:ff:ff:ff')
 
-
     def validate(self):
         if (self.frame_mac_dst not in self.list_of_macs) or (self.frame_mac_src not in self.list_of_macs) \
                 or (self.arp_mac_dst not in self.list_of_macs) or (self.arp_mac_src not in self.list_of_macs):
-            print(self.frame_mac_dst, self.frame_mac_src, self.arp_mac_src, self.arp_mac_dst)
-            print(self.list_of_macs)
             logging.error(f'[{self.epoch}]: [Packet transmitted with unknown MAC]')
-        if (self.src_ip not in self.list_of_ips) or (self.dst_ip not in self.list_of_ips):
+        elif (self.src_ip not in self.list_of_ips) or (self.dst_ip not in self.list_of_ips):
+            # print(self.src_ip, self.dst_ip)
             logging.error(f'[{self.epoch}]: [Packet transmitted by {self.frame_mac_src} has unknown IP]')
-        if self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF' and not self.is_broadcast:
+        elif self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF' and not self.is_broadcast:
             logging.error(f'[{self.epoch}]: [Unicasted packet suspiciously marked as a broadcast packet]')
-        if self.frame_mac_dst != self.arp_mac_dst:
+        elif self.frame_mac_dst != self.arp_mac_dst:
             logging.error(
-                f'[{self.epoch}]: [MAC {self.frame_mac_dst} sent ARP packet with src marked as {self.arp_mac_dst}]')
-        if not self.is_gratuitous and self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF':
-            logging.error(f'[{self.epoch}]: [Gratuitous ARP sent by {self.frame_mac_dst} is '
+                f'[{self.epoch}]: [MAC {self.frame_mac_src} sent ARP packet with src marked as {self.arp_mac_dst}]')
+        elif not self.is_gratuitous and self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF':
+            logging.error(f'[{self.epoch}]: [Gratuitous ARP sent by {self.frame_mac_src} is '
                           f'unicasted to {self.frame_mac_dst}]')
-        if self.is_gratuitous:
-            logging.info(f'[{self.epoch}]: [Gratuitous ARP sent by {self.frame_mac_dst} for ip {self.dst_ip}]')
+        elif self.is_gratuitous:
+            logging.info(f'[{self.epoch}]: [Gratuitous ARP sent by {self.frame_mac_src} for ip {self.dst_ip}]')
         elif self.is_announcement:
-            logging.info(f'[{self.epoch}]: [ARP announcement sent by {self.frame_mac_dst} claiming ip {self.dst_ip}]')
+            logging.info(f'[{self.epoch}]: [ARP announcement sent by {self.frame_mac_src} claiming ip {self.dst_ip}]')
         elif self.is_arp_probe:
-            logging.info(f'[{self.epoch}]: [ARP Probe sent by {self.frame_mac_dst} for ip {self.dst_ip}]')
+            logging.info(f'[{self.epoch}]: [ARP Probe sent by {self.frame_mac_src} for ip {self.dst_ip}]')
         elif self.is_broadcast:
-            broadcast_packet_tracker[str(self.dst_ip)] = self.configuration_list[str(self.dst_ip)]
-            logging.debug(f'[{self.epoch}]: [ARP Broadcast request sent by {self.frame_mac_dst} for ip {self.dst_ip}]')
+            if self.frame_mac_src not in self.configuration_list[self.src_ip]:
+                logging.error(
+                    f'[{self.epoch}]: [ARP Broadcast request sent by {self.frame_mac_src} directing replies to wrong ip {self.dst_ip}]')
+            else:
+                broadcast_packet_tracker[self.dst_ip] = self.configuration_list[self.dst_ip]
+                logging.debug(f'[{self.epoch}]: [ARP Broadcast request sent by {self.frame_mac_src} for ip {self.dst_ip}]')
         elif self.arp_type == 'reply':
-            if (self.dst_ip in broadcast_packet_tracker) and \
-                    (self.frame_mac_src in self.configuration_list[self.src_ip]):
-                if type(broadcast_packet_tracker[self.dst_ip]) == list:
-                    broadcast_packet_tracker[self.dst_ip].remove(self.frame_mac_src)
-                else:
-                    broadcast_packet_tracker.pop(self.frame_mac_src)
+            #pdb.set_trace()
+            if self.src_ip in broadcast_packet_tracker:
+                if str(self.frame_mac_src).upper() in self.configuration_list[self.src_ip]:
+                    if type(broadcast_packet_tracker[self.src_ip]) == list:
+                        broadcast_packet_tracker[self.src_ip].remove(str(self.frame_mac_src).lower())
+                    else:
+                        broadcast_packet_tracker.pop(self.src_ip)
                 logging.debug(f'[{self.epoch}]: [ARP reply sent by {self.frame_mac_dst} to {self.frame_mac_dst} '
                               f'for ip {self.dst_ip}]')
             else:
                 logging.error(f'[{self.epoch}]: [ARP response sent by {self.frame_mac_src} to {self.frame_mac_dst}'
-                              f' without no request]')
+                              f' without a request]')
 
 
 def main():

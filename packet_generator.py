@@ -23,9 +23,9 @@ Ether(src= 'B3:8B:9B:0F:29:8C', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.
 Ether(src= '32:2F:6B:F6:B0:51', dst= 'B3:8B:9B:0F:29:8C') / ARP(op=2, psrc='192.168.1.27', pdst='192.168.1.17', hwsrc='32:2F:6B:F6:B0:51', hwdst='B3:8B:9B:0F:29:8C') -5 
 
 
-Ether(src= 'B3:8B:9B:0F:29:8C', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.1', pdst='192.168.1.1', hwsrc='B3:8B:9B:0F:29:8C', hwdst='FF:FF:FF:FF:FF:FF') - valid GARP
+Ether(src= 'B3:8B:9B:0F:29:8C', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.16', pdst='192.168.1.16', hwsrc='B3:8B:9B:0F:29:8C', hwdst='FF:FF:FF:FF:FF:FF') - valid GARP
 
-Ether(src= 'C2:23:5E:C5:DF:6A', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.1', pdst='192.168.1.1', hwsrc='C2:23:5E:C5:DF:6A', hwdst='FF:FF:FF:FF:FF:FF') - valid GARP
+Ether(src= 'C2:23:5E:C5:DF:6A', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.24', pdst='192.168.1.24', hwsrc='C2:23:5E:C5:DF:6A', hwdst='FF:FF:FF:FF:FF:FF') - valid GARP
 
 # todo add arp probe packet
 
@@ -65,11 +65,11 @@ Ether(src= '00:2B:51:CD:CA:85', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.
 Ether(src= 'C2:23:5E:C5:DF:6A', dst= '00:2B:51:CD:CA:85') / ARP(op=2, psrc='192.168.1.24', pdst='192.168.1.14', hwsrc='C2:23:5E:C5:DF:6A', hwdst='0:2B:51:CD:CA:85'),
 Ether(src= 'B3:8B:9B:0F:29:8C', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.17', pdst='192.168.1.27', hwsrc='B3:8B:9B:0F:29:8C', hwdst='FF:FF:FF:FF:FF:FF'),
 Ether(src= '32:2F:6B:F6:B0:51', dst= 'B3:8B:9B:0F:29:8C') / ARP(op=2, psrc='192.168.1.27', pdst='192.168.1.17', hwsrc='32:2F:6B:F6:B0:51', hwdst='B3:8B:9B:0F:29:8C'),
-Ether(src= 'B3:8B:9B:0F:29:8C', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.1', pdst='192.168.1.1', hwsrc='B3:8B:9B:0F:29:8C', hwdst='FF:FF:FF:FF:FF:FF') ,
-Ether(src= 'C2:23:5E:C5:DF:6A', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.1', pdst='192.168.1.1', hwsrc='C2:23:5E:C5:DF:6A', hwdst='FF:FF:FF:FF:FF:FF') ,
+Ether(src= 'B3:8B:9B:0F:29:8C', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=2, psrc='192.168.1.16', pdst='192.168.1.16', hwsrc='B3:8B:9B:0F:29:8C', hwdst='FF:FF:FF:FF:FF:FF'),
+Ether(src= 'C2:23:5E:C5:DF:6A', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=2, psrc='192.168.1.24', pdst='192.168.1.24', hwsrc='C2:23:5E:C5:DF:6A', hwdst='FF:FF:FF:FF:FF:FF'),
 Ether(src= '78:81:A0:12:81:09', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.178.61', pdst='192.168.1.13', hwsrc='78:81:A0:12:81:09', hwdst='FF:FF:FF:FF:FF:FF'),
 Ether(src= '78:81:A0:11:81:09', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.178.3', pdst='192.168.1.61', hwsrc='78:81:A0:11:81:09', hwdst='FF:FF:FF:FF:FF:FF'),
-Ether(src= 'BB:B4:C8:08:92:8E', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.25', pdst='192.168.1.16', hwsrc='3F:4E:2E:9A:C8:6B', hwdst='FF:FF:FF:FF:FF:FF'),
+Ether(src= 'BB:B4:C8:08:92:8E', dst= 'FF:FF:FF:FF:FF:FF') / ARP(op=1, psrc='192.168.1.15', pdst='192.168.1.25', hwsrc='3F:4E:2E:9A:C8:6B', hwdst='FF:FF:FF:FF:FF:FF'),
 Ether(src= 'C2:23:5E:C5:DF:6A', dst= '00:2B:51:CD:CA:85') / ARP(op=2, psrc='192.168.1.16', pdst='192.168.1.14', hwsrc='C2:23:5E:C5:DF:6A', hwdst='0:2B:51:CD:CA:85'),
 Ether(src= 'BB:B4:C8:08:92:8E', dst= '32:2F:6B:F6:B0:51') / ARP(op=1, psrc='192.168.1.16', pdst='192.168.1.25', hwsrc='CF:62:43:C0:AC:E3', hwdst='FF:FF:FF:FF:FF:FF'),
 Ether(src= 'C2:23:5E:C5:DF:6A', dst= '88:C7:9E:77:42:42') / ARP(op=1, psrc='192.168.1.1', pdst='192.168.1.1', hwsrc='C2:23:5E:C5:DF:6A', hwdst='88:C7:9E:77:42:42')
