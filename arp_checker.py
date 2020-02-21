@@ -76,6 +76,7 @@ class ArpPacket:
                                         and self.src_ip == self.dst_ip) else False
         self.configuration_list: dict = json.load(open('config.json'))
         self.list_of_ips = list(self.configuration_list.keys())
+        self.list_of_ips.append('0.0.0.0')
         self.list_of_macs = []
         for item in list(self.configuration_list.values()):
             if type(item) == list:
@@ -86,6 +87,7 @@ class ArpPacket:
         self.list_of_macs.append('00:00:00:00:00:00')
         self.list_of_macs.append('ff:ff:ff:ff:ff:ff')
 
+
     def validate(self):
         if (self.frame_mac_dst not in self.list_of_macs) or (self.frame_mac_src not in self.list_of_macs) \
                 or (self.arp_mac_dst not in self.list_of_macs) or (self.arp_mac_src not in self.list_of_macs):
@@ -95,18 +97,18 @@ class ArpPacket:
             logging.error(f'[{self.epoch}]: [Packet transmitted by {self.frame_mac_src} has unknown IP]')
         elif self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF' and not self.is_broadcast:
             logging.error(f'[{self.epoch}]: [Unicasted packet suspiciously marked as a broadcast packet]')
+        elif self.is_announcement:
+            logging.info(f'[{self.epoch}]: [ARP announcement sent by {self.frame_mac_src} claiming ip {self.dst_ip}]')
+        elif self.is_arp_probe:
+            logging.info(f'[{self.epoch}]: [ARP Probe sent by {self.frame_mac_src} for ip {self.dst_ip}]')
         elif self.frame_mac_dst != self.arp_mac_dst:
             logging.error(
-                f'[{self.epoch}]: [MAC {self.frame_mac_src} sent ARP packet with src marked as {self.arp_mac_dst}]')
+                f'[{self.epoch}]: [MAC {self.frame_mac_src} unicasted ARP packet with src spuriously marked as {self.arp_mac_dst}]')
         elif not self.is_gratuitous and self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF':
             logging.error(f'[{self.epoch}]: [Gratuitous ARP sent by {self.frame_mac_src} is '
                           f'unicasted to {self.frame_mac_dst}]')
         elif self.is_gratuitous:
             logging.info(f'[{self.epoch}]: [Gratuitous ARP sent by {self.frame_mac_src} for ip {self.dst_ip}]')
-        elif self.is_announcement:
-            logging.info(f'[{self.epoch}]: [ARP announcement sent by {self.frame_mac_src} claiming ip {self.dst_ip}]')
-        elif self.is_arp_probe:
-            logging.info(f'[{self.epoch}]: [ARP Probe sent by {self.frame_mac_src} for ip {self.dst_ip}]')
         elif self.is_broadcast:
             if self.frame_mac_src not in self.configuration_list[self.src_ip]:
                 logging.error(
