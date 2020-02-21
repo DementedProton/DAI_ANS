@@ -65,12 +65,12 @@ class ArpPacket:
         self.src_ip = packet[ARP].psrc
         self.dst_ip = packet[ARP].pdst
         self.arp_type = 'request' if packet[ARP].op == 1 else 'reply'
-        self.is_broadcast = True if self.frame_mac_dst == 'FF:FF:FF:FF:FF:FF' else False
+        self.is_broadcast = True if self.frame_mac_dst == 'ff:ff:ff:ff:ff:ff' else False
         self.is_gratuitous = True if (self.dst_ip == self.src_ip and self.arp_type == 'reply'
-                                      and self.frame_mac_dst == 'FF:FF:FF:FF:FF:FF' and
-                                      self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF') else False
+                                      and self.frame_mac_dst == 'ff:ff:ff:ff:ff:ff' and
+                                      self.arp_mac_dst == 'ff:ff:ff:ff:ff:ff') else False
         self.is_arp_probe = True if (self.arp_mac_dst == '00:00:00:00:00:00' and self.src_ip == '0.0.0.0'
-                                     and self.frame_mac_dst == 'FF:FF:FF:FF:FF:FF') else False
+                                     and self.frame_mac_dst == 'ff:ff:ff:ff:ff:ff') else False
         self.is_announcement = True if (self.arp_type == 'request' and self.arp_mac_dst == '00:00:00:00:00:00'
                                         and self.src_ip == self.dst_ip) else False
         self.configuration_list: dict = json.load(open('config.json'))
@@ -79,13 +79,18 @@ class ArpPacket:
         for item in list(self.configuration_list.values()):
             if type(item) == list:
                 for mac in item:
-                    self.list_of_macs.append(mac)
+                    self.list_of_macs.append(mac.lower())
             else:
-                self.list_of_macs.append(item)
+                self.list_of_macs.append(item.lower())
+        self.list_of_macs.append('00:00:00:00:00:00')
+        self.list_of_macs.append('ff:ff:ff:ff:ff:ff')
+
 
     def validate(self):
         if (self.frame_mac_dst not in self.list_of_macs) or (self.frame_mac_src not in self.list_of_macs) \
                 or (self.arp_mac_dst not in self.list_of_macs) or (self.arp_mac_src not in self.list_of_macs):
+            print(self.frame_mac_dst, self.frame_mac_src, self.arp_mac_src, self.arp_mac_dst)
+            print(self.list_of_macs)
             logging.error(f'[{self.epoch}]: [Packet transmitted with unknown MAC]')
         if (self.src_ip not in self.list_of_ips) or (self.dst_ip not in self.list_of_ips):
             logging.error(f'[{self.epoch}]: [Packet transmitted by {self.frame_mac_src} has unknown IP]')
@@ -104,7 +109,7 @@ class ArpPacket:
         elif self.is_arp_probe:
             logging.info(f'[{self.epoch}]: [ARP Probe sent by {self.frame_mac_dst} for ip {self.dst_ip}]')
         elif self.is_broadcast:
-            broadcast_packet_tracker[self.dst_ip] = self.configuration_list[self.dst_ip]
+            broadcast_packet_tracker[str(self.dst_ip)] = self.configuration_list[str(self.dst_ip)]
             logging.debug(f'[{self.epoch}]: [ARP Broadcast request sent by {self.frame_mac_dst} for ip {self.dst_ip}]')
         elif self.arp_type == 'reply':
             if (self.dst_ip in broadcast_packet_tracker) and \
@@ -123,13 +128,10 @@ class ArpPacket:
 def main():
     logging.basicConfig(format='[%(levelname)s] : %(message)s', filename='console.log', filemode='w',
                         level=logging.DEBUG)
-    packets = scapy.all.rdpcap('C:\\Users\\seven\\Downloads\\Advanced Network Security\\project2\\normal-arp.pcap')
+    packets = scapy.all.rdpcap('foo.pcap')
     arp_packets = packets.filter(filter_arp)
     for packet in arp_packets:
-        if packet[ARP].op == 1:
-            print(f"{packet[ARP].psrc} requests for {packet[ARP].pdst}")
-        elif packet[ARP].op == 2:
-            print(f"{packet[ARP].psrc} sent response to {packet[ARP].pdst}")
+        ArpPacket(packet).validate();
 
 
 if __name__ == '__main__':
