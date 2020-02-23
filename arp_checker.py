@@ -96,7 +96,7 @@ class ArpPacket:
             # print(self.src_ip, self.dst_ip)
             logging.error(f'[{self.epoch}]: [Packet transmitted by {self.frame_mac_src} has unknown IP]')
         elif self.arp_mac_dst == 'FF:FF:FF:FF:FF:FF' and not self.is_broadcast:
-            print(f'[{self.epoch}]: [Unicasted packet from {self.frame_mac_src} to {self.frame_mac_dst} suspiciously marked as a broadcast packet]')
+            logging.error(f'[{self.epoch}]: [Unicasted packet from {self.frame_mac_src} to {self.frame_mac_dst} suspiciously marked as a broadcast packet]')
         elif self.is_announcement:
             logging.info(f'[{self.epoch}]: [ARP announcement sent by {self.frame_mac_src} claiming ip {self.dst_ip}]')
         elif self.is_arp_probe:
