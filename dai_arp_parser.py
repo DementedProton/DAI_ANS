@@ -1,4 +1,5 @@
 from scapy.all import *
+import sys
 
 
 def filter_arp(packet: scapy.layers.l2.Ether):
@@ -88,9 +89,9 @@ class ArpPacket:
 
 
 def main():
-    logging.basicConfig(format='[%(levelname)s] : %(message)s', filename='task3.log', filemode='w',
+    logging.basicConfig(format='[%(levelname)s] : %(message)s', filename=sys.argv[2], filemode='w',
                         level=logging.INFO)
-    packets = scapy.all.rdpcap('arp_live_traffic.pcap')
+    packets = scapy.all.rdpcap(sys.argv[1])
     arp_packets = packets.filter(filter_arp)
     for packet in arp_packets:
         ArpPacket(packet).validate()

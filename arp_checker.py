@@ -3,6 +3,7 @@ from scapy.all import *
 import scapy
 import logging
 import pdb
+import sys
 
 '''
 ERRORS 
@@ -74,7 +75,7 @@ class ArpPacket:
                                      and self.frame_mac_dst == 'ff:ff:ff:ff:ff:ff') else False
         self.is_announcement = True if (self.arp_type == 'request' and self.arp_mac_dst == '00:00:00:00:00:00'
                                         and self.src_ip == self.dst_ip) else False
-        self.configuration_list: dict = json.load(open('config.json'))
+        self.configuration_list: dict = json.load(open(sys.argv[2]))
         self.list_of_ips = list(self.configuration_list.keys())
         self.list_of_ips.append('0.0.0.0')
         self.list_of_macs = []
@@ -132,9 +133,10 @@ class ArpPacket:
 
 
 def main():
-    logging.basicConfig(format='[%(levelname)s] : %(message)s', filename='console.log', filemode='w',
+    print(sys.argv)
+    logging.basicConfig(format='[%(levelname)s] : %(message)s', filename=sys.argv[3], filemode='w',
                         level=logging.DEBUG)
-    packets = scapy.all.rdpcap('foo.pcap')
+    packets = scapy.all.rdpcap(sys.argv[1])
     arp_packets = packets.filter(filter_arp)
     for packet in arp_packets:
         ArpPacket(packet).validate();
